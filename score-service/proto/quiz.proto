@@ -8,7 +8,12 @@ service QuizService {
 }
 
 message GetScoreRequest {
-  int32 quiz_id = 1;
+  repeated ScoreRequest scoreRequests = 1;
+}
+
+message ScoreRequest {
+  int64 user_id = 1;
+  int64 quiz_id = 2;
 }
 
 message GetScoreResponse {
@@ -16,8 +21,8 @@ message GetScoreResponse {
 }
 
 message Score {
-  int32 user_id = 1;
-  int32 quiz_id = 2;
-  int32 score = 3;
+  int64 user_id = 1;
+  int64 quiz_id = 2;
+  int64 score = 3;
 }
 

@@ -7,6 +7,7 @@ import (
 	"score-service/pkg/kafka"
 	"score-service/pkg/server"
 	"score-service/proto"
+	"score-service/repository"
 	"score-service/service"
 
 	"github.com/joho/godotenv"
@@ -26,7 +27,8 @@ func main() {
 	userSubmitCG := kafka.InitSaramaConsumerAndPanicIfError(appConf.KafkaConfig.ToConfig(
 		appConf.UserSubmitAnswerTopic, appConf.ScoreServiceConsumerGroup))
 
-	scoreService := service.NewScoreService()
+	scoreRepo := repository.NewScoreRepository(appConf.RedisUrl, appConf.MysqlUrl)
+	scoreService := service.NewScoreService(scoreRepo)
 	go func() {
 		errHandleUpdateScore := userSubmitCG.Consume(scoreService.UpdateScore)
 		if errHandleUpdateScore != nil {
@@ -44,7 +46,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	// Register the quiz service with the server
-	proto.RegisterQuizServiceServer(grpcServer, server.NewGrpcServer())
+	proto.RegisterQuizServiceServer(grpcServer, server.NewGrpcServer(scoreService))
 
 	// Start the gRPC server
 	fmt.Println("gRPC server running on port 50051...")

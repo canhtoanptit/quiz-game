@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"score-service/model"
 	"strings"
@@ -117,7 +117,8 @@ func (c *SaramaConsumer) ConsumeClaim(
 	for {
 		select {
 		case message := <-claim.Messages():
-			log.Infof("[Kafka] MessageClaimed, timestamp = %v, topic = %s, partition = %d, offset %d", message.Timestamp, message.Topic, message.Partition, message.Offset)
+			log.Infof("[Kafka] MessageClaimed, timestamp = %v, topic = %s, partition = %d, offset %d",
+				message.Timestamp, message.Topic, message.Partition, message.Offset)
 			session.MarkMessage(message, doneMessage)
 			consumerMessage := model.ConsumerMessage{
 				Key:       message.Key,
@@ -141,16 +142,16 @@ func getSaramaConfig(conf *Config) *sarama.Config {
 	config := sarama.NewConfig()
 	config.Version = sarama.DefaultVersion
 
-	defaultAssignor := sarama.BalanceStrategyRange
+	defaultAssignor := []sarama.BalanceStrategy{sarama.NewBalanceStrategyRange()}
 	switch conf.Assignor {
 	case assignorSticky:
-		config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategySticky
+		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategySticky()}
 	case assignorRoundRobin:
-		config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
+		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}
 	case assignorRange:
-		config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRange
+		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRange()}
 	default:
-		config.Consumer.Group.Rebalance.Strategy = defaultAssignor
+		config.Consumer.Group.Rebalance.GroupStrategies = defaultAssignor
 	}
 
 	if conf.Oldest {
@@ -186,7 +187,7 @@ func NewTLSConfig(insecureSkipVerify bool, clientCertFile, clientKeyFile, caCert
 
 	tlsConfig.InsecureSkipVerify = insecureSkipVerify
 	if !insecureSkipVerify {
-		caCert, err := ioutil.ReadFile(filepath.Clean(caCertFile))
+		caCert, err := os.ReadFile(filepath.Clean(caCertFile))
 		if err != nil {
 			return nil, err
 		}

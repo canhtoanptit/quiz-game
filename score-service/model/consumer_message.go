@@ -7,3 +7,10 @@ type ConsumerMessage struct {
 	Partition int32
 	Offset    int64
 }
+
+type ScoreMessage struct {
+	UserId     int64
+	Score      int64
+	QuizId     int64
+	QuestionId int64
+}

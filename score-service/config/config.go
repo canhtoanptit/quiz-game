@@ -10,6 +10,9 @@ type ApplicationConfig struct {
 	KafkaConfig               *KafkaConfig
 	UserSubmitAnswerTopic     string `envconfig:"user_submit_answer_topic" default:"user_submit_answer"`
 	ScoreServiceConsumerGroup string `envconfig:"KAFKA_CONSUMER_GROUP" required:"true" default:"score-consumer-group"`
+
+	RedisUrl string `envconfig:"REDIS_URL" required:"true" default:"redis:6379"`
+	MysqlUrl string `envconfig:"MYSQL_URL" required:"true" default:"username:password@tcp(127.0.0.1:3306)/mydb"`
 }
 
 type KafkaConfig struct {
