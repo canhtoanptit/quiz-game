@@ -56,7 +56,7 @@ func (s scoreRepository) UpdateScore(ctx context.Context, answer model.ScoreMess
 		// TODO recalculate to update score
 	}
 
-	stmt, err := s.mysqlClient.db.Prepare("INSERT INTO user_answers (quiz_id, user_id, question_id, score) " +
+	stmt, err := s.mysqlClient.db.Prepare("INSERT INTO quiz_results (quiz_id, user_id, question_id, score) " +
 		"VALUES (?, ?, ?, ?)")
 	if err != nil {
 		log.Errorf("[ScoreRepository] Prepare new score answer to db of msg %+v err: %+v", answer, err)
